@@ -20,11 +20,39 @@ final class Habit {
     init(name: String, colorHex: String = "#000000", order: Int = 0) {
         self.name = name
         self.colorHex = colorHex
-        self.order = order
         self.createdAt = Date()
+        self.order = order
     }
     
     var color: Color {
         Color(hex: colorHex) ?? .black
+    }
+}
+
+// MARK: - Экспорт/импорт
+extension Habit {
+    struct ExportData: Codable {
+        var name: String
+        var colorHex: String
+        var order: Int
+        var completions: [Date]  // даты выполнения
+    }
+    
+    func toExportData() -> ExportData {
+        ExportData(
+            name: self.name,
+            colorHex: self.colorHex,
+            order: self.order,
+            completions: self.completions.map { $0.date }
+        )
+    }
+    
+    static func fromExportData(_ data: ExportData, context: ModelContext) -> Habit {
+        let habit = Habit(name: data.name, colorHex: data.colorHex, order: data.order)
+        for date in data.completions {
+            let completion = Completion(date: date, habit: habit)
+            context.insert(completion)
+        }
+        return habit
     }
 }

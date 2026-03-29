@@ -13,6 +13,7 @@ struct HabitTrackerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(.light)   // принудительно светлая тема
         }
         .modelContainer(for: [Habit.self, Completion.self])
     }

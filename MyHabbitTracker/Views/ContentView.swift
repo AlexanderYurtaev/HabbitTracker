@@ -13,18 +13,21 @@ struct ContentView: View {
     @Query(sort: \Habit.order) private var habits: [Habit]
     @State private var showingAddHabit = false
     @State private var showingSettings = false
+    @State private var navigationPath = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             List {
                 ForEach(habits) { habit in
                     VStack(alignment: .leading, spacing: 8) {
-                        NavigationLink(destination: HabitHistoryView(habit: habit)) {
-                            Text(habit.name)
-                                .font(.headline)
-                                .foregroundColor(habit.color)
-                        }
-                        .buttonStyle(.plain)
+                        Text(habit.name)
+                            .font(.headline)
+                            .foregroundColor(habit.color)
+                            .frame(maxWidth: .infinity, alignment: .leading) // убирает отступ справа
+                            .contentShape(Rectangle()) // увеличивает область нажатия
+                            .onTapGesture {
+                                navigationPath.append(habit)
+                            }
 
                         HabitWeekView(habit: habit)
                     }
@@ -42,7 +45,7 @@ struct ContentView: View {
                 .onMove(perform: moveHabit)
             }
             .listStyle(.plain)
-            .navigationBarTitleDisplayMode(.inline)   // <-- добавлено
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { showingSettings = true }) {
@@ -67,9 +70,13 @@ struct ContentView: View {
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
+            .navigationDestination(for: Habit.self) { habit in
+                HabitHistoryView(habit: habit)
+            }
         }
     }
 
+    // MARK: - Methods
     private func deleteHabits(offsets: IndexSet) {
         for index in offsets {
             modelContext.delete(habits[index])

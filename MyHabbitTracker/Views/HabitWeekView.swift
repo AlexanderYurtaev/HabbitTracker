@@ -46,8 +46,8 @@ struct HabitWeekView: View {
     private func updateWeekDays() {
         let calendar = Calendar.current
         let today = Date.today
-        // От сегодня вглубь прошлого: сегодня, вчера, позавчера... (7 дней)
-        weekDays = (0..<7).compactMap { calendar.date(byAdding: .day, value: -$0, to: today) }
+        // От сегодня вглубь прошлого: сегодня, вчера, позавчера... (8 дней)
+        weekDays = (0..<8).compactMap { calendar.date(byAdding: .day, value: -$0, to: today) }
     }
     
     private func toggleCompletion(for date: Date) {

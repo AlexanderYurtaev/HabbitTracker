@@ -67,7 +67,6 @@ struct CalendarView: View {
         let days = generateDaysForMonth()
         
         VStack {
-            // Дни недели
             HStack {
                 ForEach(daysOfWeek, id: \.self) { day in
                     Text(day)
@@ -77,10 +76,10 @@ struct CalendarView: View {
                 }
             }
             
-            // Дни месяца
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 10) {
-                ForEach(days, id: \.self) { date in
-                    if let date = date {
+                // Используем индексы для уникальных идентификаторов
+                ForEach(Array(days.enumerated()), id: \.offset) { index, optionalDate in
+                    if let date = optionalDate {
                         let isCompleted = habit.completions.contains { $0.date.isSameDay(as: date) }
                         let isToday = date.isSameDay(as: Date.today)
                         let isFuture = date > Date.today
@@ -102,6 +101,7 @@ struct CalendarView: View {
         }
         .padding(.horizontal)
     }
+
     
     private func generateDaysForMonth() -> [Date?] {
         guard let monthInterval = calendar.dateInterval(of: .month, for: month) else { return [] }

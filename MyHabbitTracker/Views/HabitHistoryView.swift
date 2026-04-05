@@ -4,48 +4,144 @@
 //
 //  Created by Alex on 23.03.2026.
 //
-
 import SwiftUI
 import SwiftData
 
 struct HabitHistoryView: View {
     let habit: Habit
+    @State private var selectedRange: MonthRange = .last1
     @State private var currentMonth = Date()
     
+    enum MonthRange: Int, CaseIterable {
+        case last1 = 1
+        case last3 = 3
+        case last6 = 6
+        case last12 = 12
+        
+        var title: String {
+            switch self {
+            case .last1: return "1 месяц"
+            case .last3: return "3 месяца"
+            case .last6: return "6 месяцев"
+            case .last12: return "12 месяцев"
+            }
+        }
+    }
+    
+    private var monthsForGrid: [Date] {
+        let calendar = Calendar.current
+        let today = Date()
+        var months: [Date] = []
+        for i in 0..<selectedRange.rawValue {
+            if let date = calendar.date(byAdding: .month, value: -i, to: today) {
+                months.append(date)
+            }
+        }
+        return months.sorted(by: >)
+    }
+    
     var body: some View {
-        VStack {
-            // Заголовок с переключением месяцев
-            HStack {
-                Button(action: previousMonth) {
-                    Image(systemName: "chevron.left")
-                }
-                Spacer()
-                Text(monthYearString(from: currentMonth))
-                    .font(.title2)
-                    .fontWeight(.medium)
-                Spacer()
-                Button(action: nextMonth) {
-                    Image(systemName: "chevron.right")
+        VStack(spacing: 0) {
+            Picker("Период", selection: $selectedRange) {
+                ForEach(MonthRange.allCases, id: \.self) { range in
+                    Text(range.title).tag(range)
                 }
             }
-            .padding()
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.bottom, 8)
+            .onChange(of: selectedRange) { _, newValue in
+                if newValue == .last1 {
+                    currentMonth = Date()
+                }
+            }
             
-            // Календарь
-            CalendarView(habit: habit, month: currentMonth)
-            
-            Spacer()
+            if selectedRange == .last1 {
+                singleMonthView
+            } else {
+                multipleMonthsGridView
+            }
         }
         .navigationTitle(habit.name)
         .navigationBarTitleDisplayMode(.inline)
     }
     
+    // MARK: - Single Month View (обычный размер)
+    private var singleMonthView: some View {
+        VStack {
+            HStack {
+                Button(action: previousMonth) {
+                    Image(systemName: "chevron.left")
+                }
+                .disabled(currentMonth <= minAllowedDateForSingle)
+                
+                Spacer()
+                Text(monthYearString(from: currentMonth))
+                    .font(.title2)
+                    .fontWeight(.medium)
+                Spacer()
+                
+                Button(action: nextMonth) {
+                    Image(systemName: "chevron.right")
+                }
+                .disabled(currentMonth >= Date())
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+            
+            CalendarView(habit: habit, month: currentMonth, mode: .normal)
+                .padding(.top, 8)
+            
+            Spacer()
+        }
+    }
+    
+    private var minAllowedDateForSingle: Date {
+        Calendar.current.date(byAdding: .year, value: -2, to: Date()) ?? Date()
+    }
+    
     private func previousMonth() {
-        currentMonth = Calendar.current.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth
+        guard let newDate = Calendar.current.date(byAdding: .month, value: -1, to: currentMonth),
+              newDate >= minAllowedDateForSingle else { return }
+        currentMonth = newDate
     }
     
     private func nextMonth() {
-        currentMonth = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth
+        guard let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth),
+              newDate <= Date() else { return }
+        currentMonth = newDate
     }
+    
+    // MARK: - Multiple Months Grid (2 месяца в строку)
+    private var multipleMonthsGridView: some View {
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                ForEach(monthsForGrid, id: \.self) { month in
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(monthYearString(from: month))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                            .padding(.top, 0)
+                            .padding(.leading, 4)
+                        CalendarView(habit: habit, month: month, mode: .compactGrid)
+                        Spacer(minLength: 0)   // выталкивает всё вверх
+                    }
+                    .frame(height: 200)        // фиксированная высота блока
+                    .frame(maxWidth: .infinity, alignment: .top)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    )
+                    .padding(.horizontal, 4)
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical)
+        }
+    }
+    
     
     private func monthYearString(from date: Date) -> String {
         let formatter = DateFormatter()
@@ -55,29 +151,71 @@ struct HabitHistoryView: View {
     }
 }
 
+// MARK: - CalendarMode
+enum CalendarMode {
+    case normal        // крупный, без дополнения до 5 строк
+    case compactGrid   // мелкий, принудительно 5 строк (35 ячеек)
+}
+
+// MARK: - CalendarView
 struct CalendarView: View {
     let habit: Habit
     let month: Date
+    let mode: CalendarMode
     @Environment(\.modelContext) private var modelContext
     
     private let calendar = Calendar.current
     private let daysOfWeek = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
     
+    private var cellSize: CGFloat {
+        switch mode {
+        case .normal: return 36
+        case .compactGrid: return 24
+        }
+    }
+    
+    private var fontSize: CGFloat {
+        switch mode {
+        case .normal: return 17
+        case .compactGrid: return 10
+        }
+    }
+    
+    private var dayHeaderFont: Font {
+        switch mode {
+        case .normal: return .caption
+        case .compactGrid: return .system(size: 8)
+        }
+    }
+    
+    private var spacing: CGFloat {
+        switch mode {
+        case .normal: return 10
+        case .compactGrid: return 2
+        }
+    }
+    
+    private var vSpacing: CGFloat {
+        switch mode {
+        case .normal: return 8
+        case .compactGrid: return 2
+        }
+    }
+    
     var body: some View {
-        let days = generateDaysForMonth()
+        let days = generateDaysForMonth(alwaysFiveRows: mode == .compactGrid)
         
-        VStack {
+        VStack(spacing: vSpacing) {
             HStack {
                 ForEach(daysOfWeek, id: \.self) { day in
                     Text(day)
                         .frame(maxWidth: .infinity)
-                        .font(.caption)
+                        .font(dayHeaderFont)
                         .foregroundColor(.secondary)
                 }
             }
             
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 10) {
-                // Используем индексы для уникальных идентификаторов
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: spacing) {
                 ForEach(Array(days.enumerated()), id: \.offset) { index, optionalDate in
                     if let date = optionalDate {
                         let isCompleted = habit.completions.contains { $0.date.isSameDay(as: date) }
@@ -90,25 +228,25 @@ struct CalendarView: View {
                             isFuture: isFuture,
                             onTap: {
                                 toggleCompletion(for: date)
-                            }
+                            },
+                            size: cellSize,
+                            fontSize: fontSize
                         )
                     } else {
                         Color.clear
-                            .frame(height: 40)
+                            .frame(height: cellSize)
                     }
                 }
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, mode == .normal ? 8 : 2)
     }
-
     
-    private func generateDaysForMonth() -> [Date?] {
+    private func generateDaysForMonth(alwaysFiveRows: Bool = false) -> [Date?] {
         guard let monthInterval = calendar.dateInterval(of: .month, for: month) else { return [] }
         let startOfMonth = monthInterval.start
         let endOfMonth = monthInterval.end
         
-        // Определяем первый день, который нужно показать (понедельник перед началом месяца)
         let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: startOfMonth))!
         
         var dates: [Date?] = []
@@ -116,17 +254,27 @@ struct CalendarView: View {
         
         while currentDate < endOfMonth {
             if currentDate < startOfMonth {
-                dates.append(nil) // пустая ячейка
+                dates.append(nil)
             } else {
                 dates.append(currentDate)
             }
             currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
         }
+        
+        if alwaysFiveRows {
+            let requiredTotal = 35
+            if dates.count < requiredTotal {
+                let missing = requiredTotal - dates.count
+                for _ in 0..<missing {
+                    dates.append(nil)
+                }
+            }
+        }
+        
         return dates
     }
     
     private func toggleCompletion(for date: Date) {
-        // Не позволяем отмечать будущие дни
         guard date <= Date.today else { return }
         
         if let existing = habit.completions.first(where: { $0.date.isSameDay(as: date) }) {
@@ -144,12 +292,15 @@ struct CalendarView: View {
     }
 }
 
+// MARK: - DayCell
 struct DayCell: View {
     let date: Date
     let isCompleted: Bool
     let isToday: Bool
     let isFuture: Bool
     let onTap: () -> Void
+    var size: CGFloat = 36
+    var fontSize: CGFloat = 17
     
     var body: some View {
         Button(action: {
@@ -158,9 +309,9 @@ struct DayCell: View {
             }
         }) {
             Text("\(Calendar.current.component(.day, from: date))")
-                .font(.body)
+                .font(.system(size: fontSize))
                 .foregroundColor(isToday ? .blue : .primary)
-                .frame(width: 36, height: 36)
+                .frame(width: size, height: size)
                 .background(
                     Circle()
                         .fill(isCompleted ? Color.green.opacity(0.3) : Color.clear)

@@ -11,6 +11,7 @@ struct HabitHistoryView: View {
     let habit: Habit
     @State private var selectedRange: MonthRange = .last1
     @State private var currentMonth = Date()
+    @State private var currentYear: Int = Calendar.current.component(.year, from: Date())
     
     enum MonthRange: Int, CaseIterable {
         case last1 = 1
@@ -27,8 +28,8 @@ struct HabitHistoryView: View {
             }
         }
     }
-    
-    private var monthsForGrid: [Date] {
+    // для 3 и 6 месяцев
+    private var recentMonthsForGrid: [Date] {
         let calendar = Calendar.current
         let today = Date()
         var months: [Date] = []
@@ -37,7 +38,31 @@ struct HabitHistoryView: View {
                 months.append(date)
             }
         }
-        return months.sorted(by: >)
+        // Сортируем от старого к новому (возрастание)
+        return months.sorted(by: <)
+    }
+    
+    // Для 12 месяцев – все месяцы выбранного года
+    private var monthsInYear: [Date] {
+        let calendar = Calendar.current
+        var dates: [Date] = []
+        for month in 1...12 {
+            var components = DateComponents()
+            components.year = currentYear
+            components.month = month
+            if let date = calendar.date(from: components) {
+                dates.append(date)
+            }
+        }
+        return dates
+    }
+    
+    private var minAllowedYear: Int {
+        Calendar.current.component(.year, from: Date()) - 5 // на 5 лет назад
+    }
+    
+    private var maxAllowedYear: Int {
+        Calendar.current.component(.year, from: Date())
     }
     
     var body: some View {
@@ -58,15 +83,17 @@ struct HabitHistoryView: View {
             
             if selectedRange == .last1 {
                 singleMonthView
+            } else if selectedRange == .last12 {
+                twelveMonthsView
             } else {
-                multipleMonthsGridView
+                multipleMonthsGridView(months: recentMonthsForGrid)
             }
         }
         .navigationTitle(habit.name)
         .navigationBarTitleDisplayMode(.inline)
     }
     
-    // MARK: - Single Month View (обычный размер)
+    // MARK: - Single Month View (1 месяц, навигация по месяцам)
     private var singleMonthView: some View {
         VStack {
             HStack {
@@ -112,11 +139,48 @@ struct HabitHistoryView: View {
         currentMonth = newDate
     }
     
-    // MARK: - Multiple Months Grid (2 месяца в строку)
-    private var multipleMonthsGridView: some View {
+    // MARK: - 12 Months View (с навигацией по годам)
+    private var twelveMonthsView: some View {
+        VStack {
+            HStack {
+                Button(action: previousYear) {
+                    Image(systemName: "chevron.left")
+                }
+                .disabled(currentYear <= minAllowedYear)
+                
+                Spacer()
+                Text(String(currentYear))
+                    .font(.title2)
+                    .fontWeight(.medium)
+                Spacer()
+                
+                Button(action: nextYear) {
+                    Image(systemName: "chevron.right")
+                }
+                .disabled(currentYear >= maxAllowedYear)
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+            
+            multipleMonthsGridView(months: monthsInYear)
+        }
+    }
+    
+    private func previousYear() {
+        guard currentYear - 1 >= minAllowedYear else { return }
+        currentYear -= 1
+    }
+    
+    private func nextYear() {
+        guard currentYear + 1 <= maxAllowedYear else { return }
+        currentYear += 1
+    }
+    
+    // MARK: - Multiple Months Grid (универсальный)
+    private func multipleMonthsGridView(months: [Date]) -> some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                ForEach(monthsForGrid, id: \.self) { month in
+                ForEach(months, id: \.self) { month in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(monthYearString(from: month))
                             .font(.subheadline)
@@ -125,9 +189,9 @@ struct HabitHistoryView: View {
                             .padding(.top, 0)
                             .padding(.leading, 4)
                         CalendarView(habit: habit, month: month, mode: .compactGrid)
-                        Spacer(minLength: 0)   // выталкивает всё вверх
+                        Spacer(minLength: 0)
                     }
-                    .frame(height: 200)        // фиксированная высота блока
+                    .frame(height: 200) // подберите под ваши размеры
                     .frame(maxWidth: .infinity, alignment: .top)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
@@ -141,7 +205,6 @@ struct HabitHistoryView: View {
             .padding(.vertical)
         }
     }
-    
     
     private func monthYearString(from date: Date) -> String {
         let formatter = DateFormatter()

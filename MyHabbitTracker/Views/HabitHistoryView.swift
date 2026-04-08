@@ -12,6 +12,7 @@ struct HabitHistoryView: View {
     @State private var selectedRange: MonthRange = .last1
     @State private var currentMonth = Date()
     @State private var currentYear: Int = Calendar.current.component(.year, from: Date())
+    @State private var showingEditSheet = false
     
     enum MonthRange: Int, CaseIterable {
         case last1 = 1
@@ -65,6 +66,33 @@ struct HabitHistoryView: View {
         Calendar.current.component(.year, from: Date())
     }
     
+//    var body: some View {
+//        VStack(spacing: 0) {
+//            Picker("Период", selection: $selectedRange) {
+//                ForEach(MonthRange.allCases, id: \.self) { range in
+//                    Text(range.title).tag(range)
+//                }
+//            }
+//            .pickerStyle(.segmented)
+//            .padding(.horizontal)
+//            .padding(.bottom, 8)
+//            .onChange(of: selectedRange) { _, newValue in
+//                if newValue == .last1 {
+//                    currentMonth = Date()
+//                }
+//            }
+//            
+//            if selectedRange == .last1 {
+//                singleMonthView
+//            } else if selectedRange == .last12 {
+//                twelveMonthsView
+//            } else {
+//                multipleMonthsGridView(months: recentMonthsForGrid)
+//            }
+//        }
+//        .navigationTitle(habit.name)
+//        .navigationBarTitleDisplayMode(.inline)
+//    }
     var body: some View {
         VStack(spacing: 0) {
             Picker("Период", selection: $selectedRange) {
@@ -91,6 +119,18 @@ struct HabitHistoryView: View {
         }
         .navigationTitle(habit.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if selectedRange == .last1 {
+                    Button(action: { showingEditSheet = true }) {
+                        Image(systemName: "pencil")
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            EditHabitView(habit: habit)
+        }
     }
     
     // MARK: - Single Month View (1 месяц, навигация по месяцам)

@@ -1,37 +1,45 @@
 //
-//  AddHabitView.swift
+//  EditHabitView.swift
 //  MyHabbitTracker
 //
-//  Created by Alex on 23.03.2026.
+//  Created by Alex on 08.04.2026.
 //
 
 import SwiftUI
 import SwiftData
 
-struct AddHabitView: View {
+struct EditHabitView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @State private var name = ""
-    @State private var selectedTextColor: Color = .black
-    @State private var selectedCardColor: Color = Color(red: 0.96, green: 0.96, blue: 0.97)
+    @Bindable var habit: Habit
     
-    // 10 спокойных мягких цветов для фона
+    @State private var name: String
+    @State private var selectedTextColor: Color
+    @State private var selectedCardColor: Color
+    
     private let cardColors: [Color] = [
-        Color(red: 0.96, green: 0.96, blue: 0.97), // мягкий серый
-        Color(red: 0.93, green: 0.98, blue: 0.93), // мятный
-        Color(red: 1.00, green: 0.96, blue: 0.92), // персиковый
-        Color(red: 0.95, green: 0.93, blue: 1.00), // лавандовый
-        Color(red: 0.90, green: 0.95, blue: 1.00), // небесно-голубой
-        Color(red: 0.98, green: 0.94, blue: 0.98), // бледно-розовый
-        Color(red: 0.94, green: 0.98, blue: 0.96), // бледно-бирюзовый
-        Color(red: 0.98, green: 0.98, blue: 0.90), // кремовый
-        Color(red: 0.92, green: 0.95, blue: 0.94), // светло-серо-зелёный
-        Color(red: 0.97, green: 0.94, blue: 0.90)  // песочный
+        Color(red: 0.96, green: 0.96, blue: 0.97),
+        Color(red: 0.93, green: 0.98, blue: 0.93),
+        Color(red: 1.00, green: 0.96, blue: 0.92),
+        Color(red: 0.95, green: 0.93, blue: 1.00),
+        Color(red: 0.90, green: 0.95, blue: 1.00),
+        Color(red: 0.98, green: 0.94, blue: 0.98),
+        Color(red: 0.94, green: 0.98, blue: 0.96),
+        Color(red: 0.98, green: 0.98, blue: 0.90),
+        Color(red: 0.92, green: 0.95, blue: 0.94),
+        Color(red: 0.97, green: 0.94, blue: 0.90)
     ]
     
     private let textColors: [Color] = [
         .black, .blue, .green, .orange, .purple, .red, .teal
     ]
+    
+    init(habit: Habit) {
+        self.habit = habit
+        _name = State(initialValue: habit.name)
+        _selectedTextColor = State(initialValue: Color(hex: habit.colorHex) ?? .black)
+        _selectedCardColor = State(initialValue: Color(hex: habit.cardColorHex) ?? Color(red: 0.96, green: 0.96, blue: 0.97))
+    }
     
     var body: some View {
         NavigationStack {
@@ -95,15 +103,15 @@ struct AddHabitView: View {
                     )
                 }
             }
-            .navigationTitle("Новая привычка")
+            .navigationTitle("Редактировать")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Отмена") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Добавить") {
-                        addHabit()
+                    Button("Сохранить") {
+                        saveChanges()
                         dismiss()
                     }
                     .disabled(name.isEmpty)
@@ -112,18 +120,10 @@ struct AddHabitView: View {
         }
     }
     
-    private func addHabit() {
-        let descriptor = FetchDescriptor<Habit>(sortBy: [SortDescriptor(\.order, order: .reverse)])
-        let existingHabits = try? modelContext.fetch(descriptor)
-        let maxOrder = existingHabits?.first?.order ?? -1
-        
-        let habit = Habit(
-            name: name,
-            colorHex: selectedTextColor.toHex() ?? "#000000",
-            cardColorHex: selectedCardColor.toHex() ?? "#F5F5F5",
-            order: maxOrder + 1
-        )
-        modelContext.insert(habit)
+    private func saveChanges() {
+        habit.name = name
+        habit.colorHex = selectedTextColor.toHex() ?? "#000000"
+        habit.cardColorHex = selectedCardColor.toHex() ?? "#F5F5F5"
         try? modelContext.save()
     }
 }

@@ -100,6 +100,7 @@ struct HabitHistoryView: View {
                     Text(range.title).tag(range)
                 }
             }
+            .accessibilityIdentifier("periodPicker")
             .pickerStyle(.segmented)
             .padding(.horizontal)
             .padding(.bottom, 8)
@@ -125,6 +126,7 @@ struct HabitHistoryView: View {
                     Button(action: { showingEditSheet = true }) {
                         Image(systemName: "pencil")
                     }
+                    .accessibilityIdentifier("editHabitButton")
                 }
             }
         }
@@ -140,6 +142,7 @@ struct HabitHistoryView: View {
                 Button(action: previousMonth) {
                     Image(systemName: "chevron.left")
                 }
+                .accessibilityIdentifier("previousMonthButton")
                 .disabled(currentMonth <= minAllowedDateForSingle)
                 
                 Spacer()
@@ -151,6 +154,7 @@ struct HabitHistoryView: View {
                 Button(action: nextMonth) {
                     Image(systemName: "chevron.right")
                 }
+                .accessibilityIdentifier("nextMonthButton")
                 .disabled(currentMonth >= Date())
             }
             .padding(.horizontal)
@@ -186,17 +190,20 @@ struct HabitHistoryView: View {
                 Button(action: previousYear) {
                     Image(systemName: "chevron.left")
                 }
+                .accessibilityIdentifier("previousYearButton")
                 .disabled(currentYear <= minAllowedYear)
                 
                 Spacer()
                 Text(String(currentYear))
                     .font(.title2)
                     .fontWeight(.medium)
+                    .accessibilityIdentifier("currentYearLabel")
                 Spacer()
                 
                 Button(action: nextYear) {
                     Image(systemName: "chevron.right")
                 }
+                .accessibilityIdentifier("nextYearButton")
                 .disabled(currentYear >= maxAllowedYear)
             }
             .padding(.horizontal)

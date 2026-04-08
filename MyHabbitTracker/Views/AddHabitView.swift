@@ -38,6 +38,7 @@ struct AddHabitView: View {
             Form {
                 Section("Название") {
                     TextField("Название привычки", text: $name)
+                        .accessibilityIdentifier("habitNameTextField")
                 }
                 
                 Section("Цвет названия") {
@@ -63,7 +64,7 @@ struct AddHabitView: View {
                 Section("Цвет фона карточки") {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 15) {
-                            ForEach(cardColors, id: \.self) { color in
+                            ForEach(Array(cardColors.enumerated()), id: \.element) { index, color in
                                 RoundedRectangle(cornerRadius: 8)
                                     .fill(color)
                                     .frame(width: 50, height: 50)
@@ -74,6 +75,7 @@ struct AddHabitView: View {
                                     .onTapGesture {
                                         selectedCardColor = color
                                     }
+                                    .accessibilityIdentifier("cardColor_\(index)")
                             }
                         }
                         .padding(.vertical, 8)
@@ -107,6 +109,7 @@ struct AddHabitView: View {
                         dismiss()
                     }
                     .disabled(name.isEmpty)
+                    .accessibilityIdentifier("saveHabitButton")
                 }
             }
         }

@@ -23,6 +23,7 @@ struct ContentView: View {
                         Text(habit.name)
                             .font(.headline)
                             .foregroundColor(habit.color)
+                            .accessibilityIdentifier("habitName_\(habit.name)") // уникальный ID
                             .frame(maxWidth: .infinity, alignment: .leading) // убирает отступ справа
                             .contentShape(Rectangle()) // увеличивает область нажатия
                             .onTapGesture {
@@ -31,6 +32,7 @@ struct ContentView: View {
 
                         HabitWeekView(habit: habit)
                     }
+                    .accessibilityIdentifier("habitCell_\(habit.name)")
                     .padding(.vertical, 12)
                     .padding(.horizontal, 8)
                     .background(
@@ -53,6 +55,7 @@ struct ContentView: View {
                     Button(action: { showingSettings = true }) {
                         Image(systemName: "gear")
                     }
+                    .accessibilityIdentifier("settingsButton")
                 }
                 ToolbarItem(placement: .principal) {
                     Text("Трекер привычек")
@@ -64,6 +67,7 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityIdentifier("addHabitButton")
                 }
             }
             .sheet(isPresented: $showingAddHabit) {

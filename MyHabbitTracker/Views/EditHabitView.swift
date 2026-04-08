@@ -46,6 +46,7 @@ struct EditHabitView: View {
             Form {
                 Section("Название") {
                     TextField("Название привычки", text: $name)
+                        .accessibilityIdentifier("habitNameTextField")
                 }
                 
                 Section("Цвет названия") {
@@ -115,6 +116,7 @@ struct EditHabitView: View {
                         dismiss()
                     }
                     .disabled(name.isEmpty)
+                    .accessibilityIdentifier("saveEditedHabitButton")
                 }
             }
         }

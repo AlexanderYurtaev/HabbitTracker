@@ -64,6 +64,8 @@ struct WeekDayButton: View {
             .scaleEffect(scale)
             .opacity(isFuture ? 0.5 : 1.0)
         }
+        .accessibilityIdentifier("dayButton_\(dayNumber)")
+        .accessibilityLabel("\(dayLetter) \(dayNumber)")  // добавляем label
         .buttonStyle(.plain)
         .disabled(isFuture)
     }

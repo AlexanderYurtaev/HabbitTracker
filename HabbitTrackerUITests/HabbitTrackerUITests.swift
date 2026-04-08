@@ -88,11 +88,16 @@ final class HabitTrackerUITests: XCTestCase {
         
         let habitText = app.staticTexts[habitName]
         XCTAssertTrue(habitText.waitForExistence(timeout: 5))
-        sleep(1)
+        
+        // Находим ячейку списка, которая содержит этот текст
+        let cell = app.cells.containing(.staticText, identifier: habitName).firstMatch
+        XCTAssertTrue(cell.waitForExistence(timeout: 2))
+        
+        sleep(1) // даём время на отрисовку кнопок внутри ячейки
         
         let dayNumber = Calendar.current.component(.day, from: Date())
-        // Ищем кнопку, чей label содержит число дня
-        let dayButton = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", String(dayNumber))).firstMatch
+        // Ищем кнопку внутри ячейки, чей label содержит число дня
+        let dayButton = cell.buttons.matching(NSPredicate(format: "label CONTAINS %@", String(dayNumber))).firstMatch
         XCTAssertTrue(dayButton.waitForExistence(timeout: 3))
         dayButton.tap()
         

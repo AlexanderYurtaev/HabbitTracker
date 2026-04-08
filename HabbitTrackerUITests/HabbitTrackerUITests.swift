@@ -56,7 +56,7 @@ final class HabitTrackerUITests: XCTestCase {
     }
 
     // MARK: - Тесты
-
+///    создаёт привычку и проверяет появление в списке
     func testAddNewHabit() throws {
         let addButton = app.buttons["addHabitButton"]
         XCTAssertTrue(addButton.exists)
@@ -81,7 +81,8 @@ final class HabitTrackerUITests: XCTestCase {
         }
         XCTAssertTrue(exists)
     }
-
+    
+///    находит ячейку привычки по тексту, затем внутри ячейки – кнопку дня (по label, содержащему число), нажимает и проверяет появление галочки
     func testMarkHabitCompletion() throws {
         let habitName = "Тест_для_отметки"
         addTestHabit(name: habitName)
@@ -104,7 +105,7 @@ final class HabitTrackerUITests: XCTestCase {
         let checkmark = dayButton.images["checkmark"]
         XCTAssertTrue(checkmark.waitForExistence(timeout: 2))
     }
-
+///    переход на экран истории
     func testNavigateToHabitHistory() throws {
         addTestHabit(name: "Тест_для_навигации")
         let habitText = app.staticTexts["Тест_для_навигации"]
@@ -113,7 +114,8 @@ final class HabitTrackerUITests: XCTestCase {
         let historyNavBar = app.navigationBars["Тест_для_навигации"]
         XCTAssertTrue(historyNavBar.waitForExistence(timeout: 2))
     }
-
+    
+///    переключение периода на 12 месяцев (после добавления идентификаторов кнопкам года)
     func testSwitchPeriodTo12Months() throws {
         addTestHabit(name: "Тест_периода")
         let habitText = app.staticTexts["Тест_периода"]
@@ -130,7 +132,8 @@ final class HabitTrackerUITests: XCTestCase {
         XCTAssertTrue(prevButton.exists)
         XCTAssertTrue(nextButton.exists)
     }
-
+    
+///    редактирование названия
     func testEditHabit() throws {
         let habitName = "Редактируемая_привычка"
         addTestHabit(name: habitName)

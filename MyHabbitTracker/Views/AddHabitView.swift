@@ -12,10 +12,10 @@ struct AddHabitView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
-    @State private var selectedTextColor: Color = .black
-    @State private var selectedCardColor: Color = Color(red: 0.96, green: 0.96, blue: 0.97)
+    @State private var selectedTextColor: Color = Color(red: 0, green: 0, blue: 0) // чёрный RGB
+    @State private var selectedCardColor: Color = Color(red: 0.91, green: 0.91, blue: 0.92)
     
-    // 10 спокойных мягких цветов для фона
+    // 10 цветов фона (оставлены без изменений)
     private let cardColors: [Color] = [
         Color(red: 0.91, green: 0.91, blue: 0.92), // мягкий серый
         Color(red: 0.86, green: 0.96, blue: 0.86), // мятный
@@ -29,8 +29,15 @@ struct AddHabitView: View {
         Color(red: 0.96, green: 0.91, blue: 0.84)  // песочный
     ]
     
+    // Явные RGB цвета вместо системных
     private let textColors: [Color] = [
-        .black, .blue, .green, .orange, .purple, .red, .teal
+        Color(red: 0, green: 0, blue: 0),       // чёрный
+        Color(red: 0, green: 0, blue: 1),       // синий
+        Color(red: 0, green: 0.5, blue: 0),     // зелёный
+        Color(red: 1, green: 0.5, blue: 0),     // оранжевый
+        Color(red: 0.5, green: 0, blue: 0.5),   // пурпурный
+        Color(red: 1, green: 0, blue: 0),       // красный
+        Color(red: 0, green: 0.5, blue: 0.5)    // бирюзовый
     ]
     
     var body: some View {
@@ -39,11 +46,6 @@ struct AddHabitView: View {
                 Section("Название") {
                     TextField("Название привычки", text: $name)
                         .accessibilityIdentifier("habitNameTextField")
-                        .onChange(of: name) { _, newValue in
-                                                    if newValue.count > 30 {
-                                                        name = String(newValue.prefix(30))
-                                                    }
-                                                }
                 }
                 
                 Section("Цвет названия") {
@@ -121,12 +123,17 @@ struct AddHabitView: View {
     }
     
     private func addHabit() {
+        // Ограничение длины 30 символов и обрезка пробелов
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let finalName = String(trimmed.prefix(30))
+        guard !finalName.isEmpty else { return }
+        
         let descriptor = FetchDescriptor<Habit>(sortBy: [SortDescriptor(\.order, order: .reverse)])
         let existingHabits = try? modelContext.fetch(descriptor)
         let maxOrder = existingHabits?.first?.order ?? -1
         
         let habit = Habit(
-            name: name,
+            name: finalName,
             colorHex: selectedTextColor.toHex() ?? "#000000",
             cardColorHex: selectedCardColor.toHex() ?? "#F5F5F5",
             order: maxOrder + 1

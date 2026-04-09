@@ -15,17 +15,26 @@ struct WeekDayButton: View {
     
     @State private var scale: CGFloat = 1.0
     
-    private var dayNumber: String {
+    // Статические форматтеры, создаются один раз при загрузке приложения
+    private static let dayNumberFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "d"
-        return formatter.string(from: date)
-    }
+        return formatter
+    }()
     
-    private var dayLetter: String {
+    private static let dayLetterFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EE"
         formatter.locale = Locale(identifier: "ru_RU")
-        return formatter.string(from: date)
+        return formatter
+    }()
+    
+    private var dayNumber: String {
+        Self.dayNumberFormatter.string(from: date)
+    }
+    
+    private var dayLetter: String {
+        Self.dayLetterFormatter.string(from: date)
     }
     
     var body: some View {
@@ -65,7 +74,7 @@ struct WeekDayButton: View {
             .opacity(isFuture ? 0.5 : 1.0)
         }
         .accessibilityIdentifier("dayButton_\(dayNumber)")
-        .accessibilityLabel("\(dayLetter) \(dayNumber)")  // добавляем label
+        .accessibilityLabel("\(dayLetter) \(dayNumber)")
         .buttonStyle(.plain)
         .disabled(isFuture)
     }

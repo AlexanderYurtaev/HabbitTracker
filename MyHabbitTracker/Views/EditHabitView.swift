@@ -18,27 +18,33 @@ struct EditHabitView: View {
     @State private var selectedCardColor: Color
     
     private let cardColors: [Color] = [
-        Color(red: 0.91, green: 0.91, blue: 0.92), // мягкий серый
-        Color(red: 0.86, green: 0.96, blue: 0.86), // мятный
-        Color(red: 0.99, green: 0.93, blue: 0.86), // персиковый
-        Color(red: 0.91, green: 0.88, blue: 0.99), // лавандовый
-        Color(red: 0.84, green: 0.91, blue: 0.99), // небесно-голубой
-        Color(red: 0.96, green: 0.89, blue: 0.96), // бледно-розовый
-        Color(red: 0.89, green: 0.96, blue: 0.93), // бледно-бирюзовый
-        Color(red: 0.97, green: 0.96, blue: 0.86), // кремовый
-        Color(red: 0.87, green: 0.91, blue: 0.89), // светло-серо-зелёный
-        Color(red: 0.96, green: 0.91, blue: 0.84)  // песочный
+        Color(red: 0.91, green: 0.91, blue: 0.92),
+        Color(red: 0.86, green: 0.96, blue: 0.86),
+        Color(red: 0.99, green: 0.93, blue: 0.86),
+        Color(red: 0.91, green: 0.88, blue: 0.99),
+        Color(red: 0.84, green: 0.91, blue: 0.99),
+        Color(red: 0.96, green: 0.89, blue: 0.96),
+        Color(red: 0.89, green: 0.96, blue: 0.93),
+        Color(red: 0.97, green: 0.96, blue: 0.86),
+        Color(red: 0.87, green: 0.91, blue: 0.89),
+        Color(red: 0.96, green: 0.91, blue: 0.84)
     ]
     
     private let textColors: [Color] = [
-        .black, .blue, .green, .orange, .purple, .red, .teal
+        Color(red: 0, green: 0, blue: 0),       // чёрный
+        Color(red: 0, green: 0, blue: 1),       // синий
+        Color(red: 0, green: 0.5, blue: 0),     // зелёный
+        Color(red: 1, green: 0.5, blue: 0),     // оранжевый
+        Color(red: 0.5, green: 0, blue: 0.5),   // пурпурный
+        Color(red: 1, green: 0, blue: 0),       // красный
+        Color(red: 0, green: 0.5, blue: 0.5)    // бирюзовый
     ]
     
     init(habit: Habit) {
         self.habit = habit
         _name = State(initialValue: habit.name)
         _selectedTextColor = State(initialValue: Color(hex: habit.colorHex) ?? .black)
-        _selectedCardColor = State(initialValue: Color(hex: habit.cardColorHex) ?? Color(red: 0.96, green: 0.96, blue: 0.97))
+        _selectedCardColor = State(initialValue: Color(hex: habit.cardColorHex) ?? Color(red: 0.91, green: 0.91, blue: 0.92))
     }
     
     var body: some View {
@@ -47,11 +53,6 @@ struct EditHabitView: View {
                 Section("Название") {
                     TextField("Название привычки", text: $name)
                         .accessibilityIdentifier("habitNameTextField")
-                        .onChange(of: name) { _, newValue in
-                                                    if newValue.count > 30 {
-                                                        name = String(newValue.prefix(30))
-                                                    }
-                                                }
                 }
                 
                 Section("Цвет названия") {
@@ -77,7 +78,7 @@ struct EditHabitView: View {
                 Section("Цвет фона карточки") {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 15) {
-                            ForEach(cardColors, id: \.self) { color in
+                            ForEach(Array(cardColors.enumerated()), id: \.element) { index, color in
                                 RoundedRectangle(cornerRadius: 8)
                                     .fill(color)
                                     .frame(width: 50, height: 50)
@@ -88,6 +89,7 @@ struct EditHabitView: View {
                                     .onTapGesture {
                                         selectedCardColor = color
                                     }
+                                    .accessibilityIdentifier("cardColor_\(index)")
                             }
                         }
                         .padding(.vertical, 8)
@@ -128,7 +130,8 @@ struct EditHabitView: View {
     }
     
     private func saveChanges() {
-        habit.name = name
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        habit.name = String(trimmed.prefix(30))
         habit.colorHex = selectedTextColor.toHex() ?? "#000000"
         habit.cardColorHex = selectedCardColor.toHex() ?? "#F5F5F5"
         try? modelContext.save()

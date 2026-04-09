@@ -11,11 +11,13 @@ import SwiftData
 struct AddHabitView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query private var habits: [Habit]
     @State private var name = ""
-    @State private var selectedTextColor: Color = Color(red: 0, green: 0, blue: 0) // чёрный RGB
+    @State private var selectedTextColor: Color = Color(red: 0, green: 0, blue: 0)
     @State private var selectedCardColor: Color = Color(red: 0.91, green: 0.91, blue: 0.92)
+    @State private var showLimitAlert = false
     
-    // 10 цветов фона (оставлены без изменений)
+    // 10 спокойных цветов для фона
     private let cardColors: [Color] = [
         Color(red: 0.91, green: 0.91, blue: 0.92), // мягкий серый
         Color(red: 0.86, green: 0.96, blue: 0.86), // мятный
@@ -29,7 +31,7 @@ struct AddHabitView: View {
         Color(red: 0.96, green: 0.91, blue: 0.84)  // песочный
     ]
     
-    // Явные RGB цвета вместо системных
+    // Явные RGB цвета для текста
     private let textColors: [Color] = [
         Color(red: 0, green: 0, blue: 0),       // чёрный
         Color(red: 0, green: 0, blue: 1),       // синий
@@ -64,6 +66,7 @@ struct AddHabitView: View {
                                     }
                             }
                         }
+                        .padding(.horizontal, 4) // добавляем горизонтальные отступы, чтобы первый и последний элементы не обрезались
                         .padding(.vertical, 8)
                     }
                 }
@@ -85,6 +88,7 @@ struct AddHabitView: View {
                                     .accessibilityIdentifier("cardColor_\(index)")
                             }
                         }
+                        .padding(.horizontal, 4) // добавляем горизонтальные отступы, чтобы первый и последний элементы не обрезались
                         .padding(.vertical, 8)
                     }
                 }
@@ -112,18 +116,26 @@ struct AddHabitView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Добавить") {
-                        addHabit()
-                        dismiss()
+                        if habits.count >= 30 {
+                            showLimitAlert = true
+                        } else {
+                            addHabit()
+                            dismiss()
+                        }
                     }
                     .disabled(name.isEmpty)
                     .accessibilityIdentifier("saveHabitButton")
                 }
             }
+            .alert("Лимит привычек", isPresented: $showLimitAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Вы можете добавить не более 30 привычек.")
+            }
         }
     }
     
     private func addHabit() {
-        // Ограничение длины 30 символов и обрезка пробелов
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let finalName = String(trimmed.prefix(30))
         guard !finalName.isEmpty else { return }

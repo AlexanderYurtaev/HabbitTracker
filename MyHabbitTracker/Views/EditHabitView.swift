@@ -71,6 +71,7 @@ struct EditHabitView: View {
                                     }
                             }
                         }
+                        .padding(.horizontal, 4) // добавляем горизонтальные отступы, чтобы первый и последний элементы не обрезались
                         .padding(.vertical, 8)
                     }
                 }
@@ -92,6 +93,7 @@ struct EditHabitView: View {
                                     .accessibilityIdentifier("cardColor_\(index)")
                             }
                         }
+                        .padding(.horizontal, 4) // добавляем горизонтальные отступы, чтобы первый и последний элементы не обрезались
                         .padding(.vertical, 8)
                     }
                 }

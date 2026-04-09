@@ -47,6 +47,11 @@ struct EditHabitView: View {
                 Section("Название") {
                     TextField("Название привычки", text: $name)
                         .accessibilityIdentifier("habitNameTextField")
+                        .onChange(of: name) { _, newValue in
+                                                    if newValue.count > 30 {
+                                                        name = String(newValue.prefix(30))
+                                                    }
+                                                }
                 }
                 
                 Section("Цвет названия") {

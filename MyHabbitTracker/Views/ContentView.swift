@@ -38,11 +38,11 @@ struct ContentView: View {
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(habit.cardColor)
-                            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+//                            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
                     )
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
-                    .frame(minHeight: 120)
+                    .frame(height: 120)
                 }
                 .onDelete(perform: deleteHabits)
                 .onMove(perform: moveHabit)

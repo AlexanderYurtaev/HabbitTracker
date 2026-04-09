@@ -66,33 +66,6 @@ struct HabitHistoryView: View {
         Calendar.current.component(.year, from: Date())
     }
     
-//    var body: some View {
-//        VStack(spacing: 0) {
-//            Picker("Период", selection: $selectedRange) {
-//                ForEach(MonthRange.allCases, id: \.self) { range in
-//                    Text(range.title).tag(range)
-//                }
-//            }
-//            .pickerStyle(.segmented)
-//            .padding(.horizontal)
-//            .padding(.bottom, 8)
-//            .onChange(of: selectedRange) { _, newValue in
-//                if newValue == .last1 {
-//                    currentMonth = Date()
-//                }
-//            }
-//            
-//            if selectedRange == .last1 {
-//                singleMonthView
-//            } else if selectedRange == .last12 {
-//                twelveMonthsView
-//            } else {
-//                multipleMonthsGridView(months: recentMonthsForGrid)
-//            }
-//        }
-//        .navigationTitle(habit.name)
-//        .navigationBarTitleDisplayMode(.inline)
-//    }
     var body: some View {
         VStack(spacing: 0) {
             Picker("Период", selection: $selectedRange) {
@@ -103,6 +76,7 @@ struct HabitHistoryView: View {
             .accessibilityIdentifier("periodPicker")
             .pickerStyle(.segmented)
             .padding(.horizontal)
+            .padding(.top, 12)   // добавляем отступ сверху
             .padding(.bottom, 8)
             .onChange(of: selectedRange) { _, newValue in
                 if newValue == .last1 {

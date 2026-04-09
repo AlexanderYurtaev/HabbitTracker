@@ -17,16 +17,16 @@ struct AddHabitView: View {
     
     // 10 спокойных мягких цветов для фона
     private let cardColors: [Color] = [
-        Color(red: 0.96, green: 0.96, blue: 0.97), // мягкий серый
-        Color(red: 0.93, green: 0.98, blue: 0.93), // мятный
-        Color(red: 1.00, green: 0.96, blue: 0.92), // персиковый
-        Color(red: 0.95, green: 0.93, blue: 1.00), // лавандовый
-        Color(red: 0.90, green: 0.95, blue: 1.00), // небесно-голубой
-        Color(red: 0.98, green: 0.94, blue: 0.98), // бледно-розовый
-        Color(red: 0.94, green: 0.98, blue: 0.96), // бледно-бирюзовый
-        Color(red: 0.98, green: 0.98, blue: 0.90), // кремовый
-        Color(red: 0.92, green: 0.95, blue: 0.94), // светло-серо-зелёный
-        Color(red: 0.97, green: 0.94, blue: 0.90)  // песочный
+        Color(red: 0.91, green: 0.91, blue: 0.92), // мягкий серый
+        Color(red: 0.86, green: 0.96, blue: 0.86), // мятный
+        Color(red: 0.99, green: 0.93, blue: 0.86), // персиковый
+        Color(red: 0.91, green: 0.88, blue: 0.99), // лавандовый
+        Color(red: 0.84, green: 0.91, blue: 0.99), // небесно-голубой
+        Color(red: 0.96, green: 0.89, blue: 0.96), // бледно-розовый
+        Color(red: 0.89, green: 0.96, blue: 0.93), // бледно-бирюзовый
+        Color(red: 0.97, green: 0.96, blue: 0.86), // кремовый
+        Color(red: 0.87, green: 0.91, blue: 0.89), // светло-серо-зелёный
+        Color(red: 0.96, green: 0.91, blue: 0.84)  // песочный
     ]
     
     private let textColors: [Color] = [

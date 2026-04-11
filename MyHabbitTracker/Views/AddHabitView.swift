@@ -116,7 +116,7 @@ struct AddHabitView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Добавить") {
-                        if habits.count >= 30 {
+                        if habits.count >= 50 {
                             showLimitAlert = true
                         } else {
                             addHabit()
